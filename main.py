@@ -55,7 +55,6 @@ print("Last 5:", feed.get_price_history("AAPL", 5))
 
 
 import csv
-import quantt
 
 from trading_engine import ENGINE_NAME
 from trading_engine.backtester import Backtester
@@ -80,43 +79,41 @@ def main():
     print()
     bt.print_report()
 
-    # Metrics
-    quantt.metric("Starting cash",  bt.starting_cash,                 format="currency")
-    quantt.metric("Ending value",   bt.equity_curve[-1][1],            format="currency")
-    quantt.metric("Total return",   bt.total_return(),                 format="percent")
-    quantt.metric("Trades",         float(len(bt.trade_log)))
-    quantt.metric("Max drawdown",   bt.max_drawdown(),                 format="percent")
-
-    # Equity curve
-    quantt.line(
-        {"x": [ts for ts, _ in bt.equity_curve],
-         "Equity": [v for _, v in bt.equity_curve]},
-        title="Backtest equity curve",
-        format="currency",
-    )
-
-    # Price with the moving averages we traded on
-    closes = [p for _, p, _ in bars]
-    dates = [ts for _, _, ts in bars]
-    def rolling(x, w):
-        out = [None] * (w - 1)
-        for i in range(w - 1, len(x)):
-            out.append(sum(x[i - w + 1: i + 1]) / w)
-        return out
-    quantt.line(
-        {"x": dates, "Price": closes,
-         "SMA-5": rolling(closes, 5), "SMA-20": rolling(closes, 20)},
-        title="AAPL: price and moving averages",
-        format="currency",
-    )
-
-    # Trade cash impact bars (one per fill, buys negative, sells positive)
-    quantt.bar(
-        [t["timestamp"] for t in bt.trade_log],
-        [(-1 if t["side"] == "BUY" else 1) * t["quantity"] * t["price"] for t in bt.trade_log],
-        title="Trade cash impact (positive = sell proceeds)",
-        format="currency",
-    )
+    # --- Quantt Studio charts (uncomment when running inside Quantt Studio) ---
+    # import quantt
+    # quantt.metric("Starting cash",  bt.starting_cash,                 format="currency")
+    # quantt.metric("Ending value",   bt.equity_curve[-1][1],            format="currency")
+    # quantt.metric("Total return",   bt.total_return(),                 format="percent")
+    # quantt.metric("Trades",         float(len(bt.trade_log)))
+    # quantt.metric("Max drawdown",   bt.max_drawdown(),                 format="percent")
+    #
+    # quantt.line(
+    #     {"x": [ts for ts, _ in bt.equity_curve],
+    #      "Equity": [v for _, v in bt.equity_curve]},
+    #     title="Backtest equity curve",
+    #     format="currency",
+    # )
+    #
+    # closes = [p for _, p, _ in bars]
+    # dates = [ts for _, _, ts in bars]
+    # def rolling(x, w):
+    #     out = [None] * (w - 1)
+    #     for i in range(w - 1, len(x)):
+    #         out.append(sum(x[i - w + 1: i + 1]) / w)
+    #     return out
+    # quantt.line(
+    #     {"x": dates, "Price": closes,
+    #      "SMA-5": rolling(closes, 5), "SMA-20": rolling(closes, 20)},
+    #     title="AAPL: price and moving averages",
+    #     format="currency",
+    # )
+    #
+    # quantt.bar(
+    #     [t["timestamp"] for t in bt.trade_log],
+    #     [(-1 if t["side"] == "BUY" else 1) * t["quantity"] * t["price"] for t in bt.trade_log],
+    #     title="Trade cash impact (positive = sell proceeds)",
+    #     format="currency",
+    # )
 
 
 if __name__ == "__main__":
